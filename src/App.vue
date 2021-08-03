@@ -1,57 +1,75 @@
 <template>
   <div class="container">
-    <Header title='Task Tracker'/>
+    <Header @button-clicked='toogleAdd' title='Task Tracker' :showAddTask='showAddTask'/>
+    <div v-show='showAddTask'>
+      <AddTask  @add-task='addTask'/>
+    </div>
     <Tasks @toogle-reminder='toogleReminder' @delete-task='deleteTask' :tasks='tasks'/>
   </div>
 
 </template>
 
 <script>
-  import Header from './components/Header'
-  import Tasks from './components/Tasks'
+import AddTask from './components/AddTask';
+import Header from './components/Header'
+import Tasks from './components/Tasks'
 
 
   export default {
     name: "App",
     components: {
       Header,
-      Tasks
+      Tasks,
+      AddTask,
+      
     },
     data() {
       return {
-        tasks: []
+        tasks: [],
+        showAddTask: false
       }
     },
     methods: {
       deleteTask (id) {
         if(confirm('Are you sure ?')) this.tasks = this.tasks.filter(task => task.id !== id)
         
+      },
+      toogleReminder (id) {
+        this.tasks = this.tasks.map(task => task.id === id ? {...task, reminder: !task.reminder } : task)
+      },
+      async addTask (newTask) {
+        await fetch('api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-type': 'application/json',
+          },
+          body: JSON.stringify(newTask)
+
+        })
+
+        this.tasks = [...this.tasks, newTask]
+      },
+      toogleAdd () {
+        this.showAddTask = !this.showAddTask
+      },
+      async fetchTasks () {
+        const res = await fetch('api/tasks')
+
+        const data = await res.json()
+
+        return data
+      },
+      async fetchTask (id) {
+        const res = await fetch(`api/tasks/${id}`)
+
+        const data = await res.json()
+
+        return data
       }
     },
-    toogleReminder (id) {
-      console.log(id)
-    },
-    created() {
-      this.tasks = [
-        {
-          id: 1,
-          text: 'Doctor',
-          day: 'March 31st',
-          reminder: true
-        },
-        {
-          id: 2,
-          text: 'Shcool',
-          day: 'March 3rd',
-          reminder: false
-        },
-        {
-          id: 3,
-          text: 'Dog',
-          day: 'March 15th',
-          reminder: true
-        }
-      ]
+    
+    async created() {
+      this.tasks = await this.fetchTasks()
     }
   };
 </script>

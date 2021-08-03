@@ -1,7 +1,7 @@
 <template>
     <header>
         <h1> {{ title }} </h1>
-        <Button text='Add Task' color='green'/>
+        <Button @button-clicked="$emit('button-clicked')" :text="showAddTask ? 'Close' : 'Add Task'" :color="showAddTask ? 'green' : 'red'"/>
     </header>
 </template>
 
@@ -17,8 +17,10 @@ import Button from './Button'
             title: {
                 type: String,
                 default: 'Header Component'
-            }
-        }
+            },
+            showAddTask: Boolean
+        },
+        emits: ['button-clicked']
     }
 </script>
 
